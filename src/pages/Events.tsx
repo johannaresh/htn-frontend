@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { fetchAllEvents } from '../api/events';
 import type { Event } from '../api/events';
@@ -7,6 +7,16 @@ import { EventModal } from '../components/events/EventModal';
 import { useAuth } from '../auth/AuthContext';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
+
+interface DragState {
+  draggedId: number;
+  originIndex: number;
+  placeholderIndex: number;
+  position: { x: number; y: number };
+  offset: { x: number; y: number };
+  cardWidth: number;
+  cardHeight: number;
+}
 
 const EVENT_ORDER_KEY = 'eventOrderV1';
 
@@ -84,9 +94,9 @@ export const Events = () => {
 
   const [reorderMode, setReorderMode] = useState(false);
   const [customOrder, setCustomOrder] = useState<number[]>([]);
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
+  const [dragState, setDragState] = useState<DragState | null>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
   useEffect(() => {
     const loadEvents = async () => {
@@ -212,73 +222,129 @@ export const Events = () => {
     [customOrder, visibleEvents]
   );
 
-  const handleDragStart = useCallback((e: React.DragEvent, index: number) => {
-    setDraggedIndex(index);
-    setIsDragging(true);
-    // Set drag image opacity (browser default makes it semi-transparent)
-    if (e.dataTransfer) {
-      e.dataTransfer.effectAllowed = 'move';
-    }
-  }, []);
+  // Calculate which grid index the pointer is over based on card positions
+  const getHoverIndex = useCallback((clientX: number, clientY: number): number | null => {
+    if (!gridRef.current) return null;
 
-  const handleDragOver = useCallback((e: React.DragEvent, index: number) => {
+    // Find which card we're closest to
+    let closestIndex: number | null = null;
+    let closestDistance = Infinity;
+
+    for (const [id, element] of cardRefs.current.entries()) {
+      const rect = element.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+
+      // Check if pointer is within the card bounds
+      if (clientX >= rect.left && clientX <= rect.right &&
+          clientY >= rect.top && clientY <= rect.bottom) {
+        // Get the index in the filtered list (excluding dragged item)
+        const eventsWithoutDragged = visibleEvents.filter(e => e.id !== (dragState?.draggedId ?? -1));
+        const indexInFiltered = eventsWithoutDragged.findIndex(e => e.id === id);
+        if (indexInFiltered >= 0) {
+          return indexInFiltered;
+        }
+      }
+
+      // Calculate distance for fallback
+      const distance = Math.sqrt(Math.pow(clientX - centerX, 2) + Math.pow(clientY - centerY, 2));
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        const eventsWithoutDragged = visibleEvents.filter(e => e.id !== (dragState?.draggedId ?? -1));
+        const indexInFiltered = eventsWithoutDragged.findIndex(e => e.id === id);
+        if (indexInFiltered >= 0) {
+          closestIndex = indexInFiltered;
+        }
+      }
+    }
+
+    return closestIndex;
+  }, [visibleEvents, dragState?.draggedId]);
+
+  const handlePointerDown = useCallback((e: React.PointerEvent, index: number, eventId: number) => {
+    if (!reorderMode) return;
     e.preventDefault();
-    if (e.dataTransfer) {
-      e.dataTransfer.dropEffect = 'move';
-    }
-    setDragOverIndex(index);
-  }, []);
 
-  const handleDragLeave = useCallback(() => {
-    setDragOverIndex(null);
-  }, []);
+    const element = cardRefs.current.get(eventId);
+    if (!element) return;
 
-  const handleDrop = useCallback(
-    (e: React.DragEvent, dropIndex: number) => {
-      e.preventDefault();
-      if (draggedIndex === null || draggedIndex === dropIndex) {
-        setDragOverIndex(null);
-        setIsDragging(false);
-        return;
+    const rect = element.getBoundingClientRect();
+
+    setDragState({
+      draggedId: eventId,
+      originIndex: index,
+      placeholderIndex: index,
+      position: { x: rect.left, y: rect.top },
+      offset: { x: e.clientX - rect.left, y: e.clientY - rect.top },
+      cardWidth: rect.width,
+      cardHeight: rect.height,
+    });
+  }, [reorderMode]);
+
+  // Document-level pointer event handlers for dragging
+  useEffect(() => {
+    if (!dragState) return;
+
+    const handleMove = (e: PointerEvent) => {
+      const newX = e.clientX - dragState.offset.x;
+      const newY = e.clientY - dragState.offset.y;
+
+      // Calculate hover index from current grid positions
+      const hoverIndex = getHoverIndex(e.clientX, e.clientY);
+      const newPlaceholderIndex = hoverIndex !== null ? hoverIndex : dragState.originIndex;
+
+      setDragState(prev => prev ? {
+        ...prev,
+        position: { x: newX, y: newY },
+        placeholderIndex: newPlaceholderIndex,
+      } : null);
+    };
+
+    const handleUp = () => {
+      const { draggedId, placeholderIndex, originIndex } = dragState;
+
+      if (placeholderIndex !== originIndex) {
+        const currentIds = visibleEvents.map((ev) => ev.id);
+        const workingOrder = customOrder.length > 0 ? [...customOrder] : [...currentIds];
+
+        const dragPos = workingOrder.indexOf(draggedId);
+        if (dragPos !== -1) {
+          workingOrder.splice(dragPos, 1);
+
+          // Find the ID at the placeholder position in the filtered list
+          const idsWithoutDragged = currentIds.filter(id => id !== draggedId);
+          const targetId = idsWithoutDragged[placeholderIndex];
+
+          if (targetId !== undefined) {
+            const insertPos = workingOrder.indexOf(targetId);
+            if (insertPos !== -1) {
+              workingOrder.splice(insertPos, 0, draggedId);
+            } else {
+              workingOrder.push(draggedId);
+            }
+          } else {
+            // Placeholder is at the end
+            workingOrder.push(draggedId);
+          }
+
+          setCustomOrder(workingOrder);
+          localStorage.setItem(EVENT_ORDER_KEY, JSON.stringify(workingOrder));
+        }
       }
 
-      const currentIds = visibleEvents.map((ev) => ev.id);
-      const workingOrder = customOrder.length > 0 ? [...customOrder] : currentIds;
+      setDragState(null);
+    };
 
-      const draggedId = currentIds[draggedIndex];
-      const dragPos = workingOrder.indexOf(draggedId);
+    document.addEventListener('pointermove', handleMove);
+    document.addEventListener('pointerup', handleUp);
+    document.addEventListener('pointercancel', handleUp);
 
-      if (dragPos === -1) {
-        setDragOverIndex(null);
-        setIsDragging(false);
-        return;
-      }
-
-      workingOrder.splice(dragPos, 1);
-
-      const dropId = currentIds[dropIndex];
-      const newDropPos = workingOrder.indexOf(dropId);
-
-      if (draggedIndex < dropIndex) {
-        workingOrder.splice(newDropPos + 1, 0, draggedId);
-      } else {
-        workingOrder.splice(newDropPos, 0, draggedId);
-      }
-
-      setCustomOrder(workingOrder);
-      localStorage.setItem(EVENT_ORDER_KEY, JSON.stringify(workingOrder));
-      setDraggedIndex(null);
-      setDragOverIndex(null);
-      setIsDragging(false);
-    },
-    [draggedIndex, visibleEvents, customOrder]
-  );
-
-  const handleDragEnd = useCallback(() => {
-    setDraggedIndex(null);
-    setDragOverIndex(null);
-    setIsDragging(false);
-  }, []);
+    return () => {
+      document.removeEventListener('pointermove', handleMove);
+      document.removeEventListener('pointerup', handleUp);
+      document.removeEventListener('pointercancel', handleUp);
+    };
+  }, [dragState, visibleEvents, customOrder, getHoverIndex]);
 
   // Modal handlers
   const handleOpenModal = useCallback(
@@ -433,85 +499,158 @@ export const Events = () => {
           </p>
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 items-stretch">
-          {visibleEvents.map((event, index) => {
-            const isBeingDragged = draggedIndex === index;
-            const isDropTarget = dragOverIndex === index && draggedIndex !== null && draggedIndex !== index;
-
-            // Determine cursor style for reorder mode (normal mode uses EventCard's cursor)
-            let cursorClass = '';
-            if (reorderMode) {
-              cursorClass = isDragging && isBeingDragged ? 'cursor-grabbing' : 'cursor-grab';
-            }
-
-            return (
-              <div
-                key={event.id}
-                draggable={reorderMode}
-                onDragStart={(e) => handleDragStart(e, index)}
-                onDragOver={(e) => handleDragOver(e, index)}
-                onDragLeave={handleDragLeave}
-                onDrop={(e) => handleDrop(e, index)}
-                onDragEnd={handleDragEnd}
-                className={`
-                  relative transition-all duration-200 ease-out rounded-lg
-                  ${cursorClass}
-                  ${isBeingDragged ? 'scale-105 shadow-2xl shadow-cyan-500/30 z-50 ring-2 ring-cyan-500' : ''}
-                  ${isDropTarget ? 'ring-2 ring-cyan-400 ring-dashed bg-cyan-500/10' : ''}
-                `}
-              >
-                {/* Drop indicator line */}
-                {isDropTarget && (
-                  <div className="absolute -top-2 left-0 right-0 h-1 bg-cyan-400 rounded-full" />
-                )}
-
-                {reorderMode && (
-                  <div className="absolute top-2 left-2 z-10 flex gap-1">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleMove(index, 'up');
-                      }}
-                      disabled={index === 0}
-                      className="p-1 bg-gray-900 hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed rounded border border-gray-700 text-white"
-                      aria-label="Move up"
-                      title="Move up"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 15l7-7 7 7"
-                        />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleMove(index, 'down');
-                      }}
-                      disabled={index === visibleEvents.length - 1}
-                      className="p-1 bg-gray-900 hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed rounded border border-gray-700 text-white"
-                      aria-label="Move down"
-                      title="Move down"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
+        <>
+          <div
+            ref={gridRef}
+            className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 items-stretch"
+          >
+            {(() => {
+              // Build the render list with placeholder gap
+              // When dragging, exclude dragged item and insert placeholder at target position
+              if (!dragState) {
+                // No dragging - render all events normally
+                return visibleEvents.map((event, index) => (
+                  <div
+                    key={event.id}
+                    ref={(el) => {
+                      if (el) cardRefs.current.set(event.id, el);
+                      else cardRefs.current.delete(event.id);
+                    }}
+                    onPointerDown={(e) => handlePointerDown(e, index, event.id)}
+                    className={`
+                      relative rounded-lg touch-none
+                      ${reorderMode ? 'cursor-grab' : ''}
+                    `}
+                  >
+                    {reorderMode && (
+                      <div className="absolute top-2 left-2 z-10 flex gap-1">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMove(index, 'up');
+                          }}
+                          disabled={index === 0}
+                          className="p-1 bg-gray-900 hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed rounded border border-gray-700 text-white"
+                          aria-label="Move up"
+                          title="Move up"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMove(index, 'down');
+                          }}
+                          disabled={index === visibleEvents.length - 1}
+                          className="p-1 bg-gray-900 hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed rounded border border-gray-700 text-white"
+                          aria-label="Move down"
+                          title="Move down"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                      </div>
+                    )}
+                    <EventCard event={event} onClick={reorderMode ? undefined : () => handleOpenModal(event.id)} />
                   </div>
-                )}
-                <EventCard event={event} onClick={reorderMode ? undefined : () => handleOpenModal(event.id)} />
+                ));
+              }
+
+              // Dragging - build reordered list with placeholder
+              const eventsWithoutDragged = visibleEvents.filter(e => e.id !== dragState.draggedId);
+              const renderItems: React.ReactNode[] = [];
+
+              // Insert cards and placeholder at the right positions
+              for (let i = 0; i <= eventsWithoutDragged.length; i++) {
+                // Insert placeholder at placeholderIndex
+                if (i === dragState.placeholderIndex) {
+                  renderItems.push(
+                    <div
+                      key="placeholder"
+                      className="rounded-lg border-2 border-dashed border-cyan-500/50 bg-cyan-500/10 transition-all duration-200"
+                      style={{ minHeight: dragState.cardHeight || 140 }}
+                    />
+                  );
+                }
+
+                // Insert event card (if we haven't exceeded the array)
+                if (i < eventsWithoutDragged.length) {
+                  const event = eventsWithoutDragged[i];
+                  const originalIndex = visibleEvents.findIndex(e => e.id === event.id);
+
+                  renderItems.push(
+                    <div
+                      key={event.id}
+                      ref={(el) => {
+                        if (el) cardRefs.current.set(event.id, el);
+                        else cardRefs.current.delete(event.id);
+                      }}
+                      className="relative rounded-lg touch-none cursor-grabbing transition-transform duration-200 ease-out"
+                    >
+                      {reorderMode && (
+                        <div className="absolute top-2 left-2 z-10 flex gap-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMove(originalIndex, 'up');
+                            }}
+                            disabled={originalIndex === 0}
+                            className="p-1 bg-gray-900 hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed rounded border border-gray-700 text-white"
+                            aria-label="Move up"
+                            title="Move up"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMove(originalIndex, 'down');
+                            }}
+                            disabled={originalIndex === visibleEvents.length - 1}
+                            className="p-1 bg-gray-900 hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed rounded border border-gray-700 text-white"
+                            aria-label="Move down"
+                            title="Move down"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                        </div>
+                      )}
+                      <EventCard event={event} />
+                    </div>
+                  );
+                }
+              }
+
+              return renderItems;
+            })()}
+          </div>
+
+          {/* Floating dragged card overlay */}
+          {dragState && (
+            <div
+              className="fixed pointer-events-none z-[100]"
+              style={{
+                left: dragState.position.x,
+                top: dragState.position.y,
+                width: dragState.cardWidth,
+              }}
+            >
+              <div className="scale-105 shadow-2xl shadow-cyan-500/40 ring-2 ring-cyan-500 rounded-lg bg-gray-900">
+                {(() => {
+                  const draggedEvent = visibleEvents.find(e => e.id === dragState.draggedId);
+                  return draggedEvent ? <EventCard event={draggedEvent} /> : null;
+                })()}
               </div>
-            );
-          })}
-        </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Event detail modal */}

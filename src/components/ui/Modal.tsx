@@ -5,9 +5,10 @@ interface ModalProps {
   onClose: () => void;
   children: ReactNode;
   title?: string;
+  footer?: ReactNode;
 }
 
-export const Modal = ({ isOpen, onClose, children, title }: ModalProps) => {
+export const Modal = ({ isOpen, onClose, children, title, footer }: ModalProps) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
 
@@ -103,33 +104,38 @@ export const Modal = ({ isOpen, onClose, children, title }: ModalProps) => {
       {/* Modal content */}
       <div
         ref={modalRef}
-        className="relative w-full max-w-md bg-gray-900 border border-gray-700 rounded-lg shadow-xl"
+        className="relative w-full max-w-md max-h-[85vh] bg-gray-900 border border-gray-700 rounded-lg shadow-xl flex flex-col overflow-hidden"
       >
-        {/* Close button */}
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute top-4 right-4 p-1 text-gray-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 rounded"
-          aria-label="Close modal"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-
-        {/* Title */}
-        {title && (
-          <div className="px-6 pt-6 pb-2">
-            <h2 id="modal-title" className="text-xl font-bold text-white">
+        {/* Header with close button */}
+        <div className="flex-shrink-0 flex items-center justify-between px-6 pt-6 pb-2">
+          {title && (
+            <h2 id="modal-title" className="text-xl font-bold text-white pr-8">
               {title}
             </h2>
-          </div>
-        )}
+          )}
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute top-4 right-4 p-1 text-gray-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 rounded"
+            aria-label="Close modal"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
-        {/* Content */}
-        <div className="px-6 py-4">
+        {/* Scrollable body */}
+        <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4">
           {children}
         </div>
+
+        {/* Footer (sticky at bottom) */}
+        {footer && (
+          <div className="flex-shrink-0 px-6 py-4 border-t border-gray-700 bg-gray-900">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );

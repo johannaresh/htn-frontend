@@ -150,9 +150,26 @@ export const VolunteerFormModal = ({ isOpen, onClose }: VolunteerFormModalProps)
     );
   }
 
+  const footerContent = (
+    <div className="flex justify-end gap-3">
+      <Button type="button" variant="secondary" onClick={handleClose}>
+        Cancel
+      </Button>
+      <Button
+        type="submit"
+        form="volunteer-form"
+        variant="primary"
+        disabled={!isFormValid}
+        className={!isFormValid ? 'opacity-50 cursor-not-allowed' : ''}
+      >
+        Submit Application
+      </Button>
+    </div>
+  );
+
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Apply to Volunteer">
-      <form onSubmit={handleSubmit} noValidate>
+    <Modal isOpen={isOpen} onClose={handleClose} title="Apply to Volunteer" footer={footerContent}>
+      <form id="volunteer-form" onSubmit={handleSubmit} noValidate>
         {/* Full Name */}
         <div className="mb-4">
           <label htmlFor="fullName" className="block text-sm font-medium text-gray-300 mb-1">
@@ -218,7 +235,7 @@ export const VolunteerFormModal = ({ isOpen, onClose }: VolunteerFormModalProps)
         </div>
 
         {/* Short Note */}
-        <div className="mb-6">
+        <div className="mb-4">
           <label htmlFor="shortNote" className="block text-sm font-medium text-gray-300 mb-1">
             Short Note <span className="text-red-400">*</span>
           </label>
@@ -229,27 +246,12 @@ export const VolunteerFormModal = ({ isOpen, onClose }: VolunteerFormModalProps)
             onChange={handleChange}
             onBlur={handleBlur}
             rows={3}
-            className={inputClassName('shortNote')}
+            className={`${inputClassName('shortNote')} resize-y max-h-[180px]`}
             placeholder="Tell us why you'd like to volunteer..."
           />
           {shouldShowError('shortNote') && (
             <p className="mt-1 text-sm text-red-400">{errors.shortNote}</p>
           )}
-        </div>
-
-        {/* Submit Button */}
-        <div className="flex justify-end gap-3">
-          <Button type="button" variant="secondary" onClick={handleClose}>
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={!isFormValid}
-            className={!isFormValid ? 'opacity-50 cursor-not-allowed' : ''}
-          >
-            Submit Application
-          </Button>
         </div>
       </form>
     </Modal>

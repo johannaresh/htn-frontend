@@ -141,9 +141,26 @@ export const ContactFormModal = ({ isOpen, onClose }: ContactFormModalProps) => 
     );
   }
 
+  const footerContent = (
+    <div className="flex justify-end gap-3">
+      <Button type="button" variant="secondary" onClick={handleClose}>
+        Cancel
+      </Button>
+      <Button
+        type="submit"
+        form="contact-form"
+        variant="primary"
+        disabled={!isFormValid}
+        className={!isFormValid ? 'opacity-50 cursor-not-allowed' : ''}
+      >
+        Send Message
+      </Button>
+    </div>
+  );
+
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Contact Us">
-      <form onSubmit={handleSubmit} noValidate>
+    <Modal isOpen={isOpen} onClose={handleClose} title="Contact Us" footer={footerContent}>
+      <form id="contact-form" onSubmit={handleSubmit} noValidate>
         {/* Name */}
         <div className="mb-4">
           <label htmlFor="contact-name" className="block text-sm font-medium text-gray-300 mb-1">
@@ -205,7 +222,7 @@ export const ContactFormModal = ({ isOpen, onClose }: ContactFormModalProps) => 
         </div>
 
         {/* Message */}
-        <div className="mb-6">
+        <div className="mb-4">
           <label htmlFor="contact-message" className="block text-sm font-medium text-gray-300 mb-1">
             Message <span className="text-red-400">*</span>
           </label>
@@ -216,27 +233,12 @@ export const ContactFormModal = ({ isOpen, onClose }: ContactFormModalProps) => 
             onChange={handleChange}
             onBlur={handleBlur}
             rows={4}
-            className={inputClassName('message')}
+            className={`${inputClassName('message')} resize-y max-h-[220px]`}
             placeholder="How would you like to support our event?"
           />
           {shouldShowError('message') && (
             <p className="mt-1 text-sm text-red-400">{errors.message}</p>
           )}
-        </div>
-
-        {/* Submit Button */}
-        <div className="flex justify-end gap-3">
-          <Button type="button" variant="secondary" onClick={handleClose}>
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={!isFormValid}
-            className={!isFormValid ? 'opacity-50 cursor-not-allowed' : ''}
-          >
-            Send Message
-          </Button>
         </div>
       </form>
     </Modal>
