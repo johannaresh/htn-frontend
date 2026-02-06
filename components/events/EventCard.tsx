@@ -8,9 +8,22 @@ import { useAuth } from '@/lib/auth/AuthContext';
 interface EventCardProps {
   event: Event;
   onClick?: () => void;
+  showReorderButtons?: boolean;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
 }
 
-export const EventCard = ({ event, onClick }: EventCardProps) => {
+export const EventCard = ({
+  event,
+  onClick,
+  showReorderButtons,
+  onMoveUp,
+  onMoveDown,
+  canMoveUp = true,
+  canMoveDown = true,
+}: EventCardProps) => {
   const { isAuthed } = useAuth();
   const isPrivate = event.permission === 'private';
 
@@ -31,9 +44,43 @@ export const EventCard = ({ event, onClick }: EventCardProps) => {
     >
       <div className="flex items-start justify-between gap-3 mb-2">
         <h3 className="text-lg font-semibold text-white flex-1 min-w-0">{event.name}</h3>
-        <div className="flex flex-wrap gap-1.5 flex-shrink-0">
-          <Badge variant={event.event_type}>{formatEventType(event.event_type)}</Badge>
-          {isPrivate && isAuthed && <Badge variant="private">Private</Badge>}
+        <div className="flex flex-col items-end gap-2 flex-shrink-0">
+          <div className="flex flex-wrap gap-1.5">
+            <Badge variant={event.event_type}>{formatEventType(event.event_type)}</Badge>
+            {isPrivate && isAuthed && <Badge variant="private">Private</Badge>}
+          </div>
+          {/* Reorder buttons - positioned under the badge */}
+          {showReorderButtons && (
+            <div
+              className="flex gap-1"
+              onPointerDown={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onMoveUp?.(); }}
+                disabled={!canMoveUp}
+                className="p-1.5 bg-gray-800 hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed rounded border border-gray-600 text-white"
+                aria-label="Move up"
+                title="Move up"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onMoveDown?.(); }}
+                disabled={!canMoveDown}
+                className="p-1.5 bg-gray-800 hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed rounded border border-gray-600 text-white"
+                aria-label="Move down"
+                title="Move down"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
+          )}
         </div>
       </div>
       <p className="text-sm text-gray-400">{formatTimeRange(event.start_time, event.end_time)}</p>

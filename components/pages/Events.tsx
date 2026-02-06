@@ -386,11 +386,10 @@ export const Events = () => {
           <span className="text-sm text-gray-400">Filter:</span>
           <button
             onClick={() => handleTypeChange('all')}
-            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-              selectedType === 'all'
+            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${selectedType === 'all'
                 ? 'bg-cyan-600 text-white'
                 : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-            }`}
+              }`}
             aria-pressed={selectedType === 'all'}
           >
             All
@@ -399,11 +398,10 @@ export const Events = () => {
             <button
               key={type}
               onClick={() => handleTypeChange(type)}
-              className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-                selectedType === type
+              className={`px-4 py-2 rounded text-sm font-medium transition-colors ${selectedType === type
                   ? 'bg-cyan-600 text-white'
                   : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-              }`}
+                }`}
               aria-pressed={selectedType === type}
             >
               {type === 'tech_talk' ? 'Tech Talk' : type.charAt(0).toUpperCase() + type.slice(1)}
@@ -416,21 +414,19 @@ export const Events = () => {
           <span className="text-sm text-gray-400">Sort by:</span>
           <button
             onClick={() => setSortMode('start_time')}
-            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-              sortMode === 'start_time'
+            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${sortMode === 'start_time'
                 ? 'bg-cyan-600 text-white'
                 : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-            }`}
+              }`}
           >
             Start Time
           </button>
           <button
             onClick={() => setSortMode('duration')}
-            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-              sortMode === 'duration'
+            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${sortMode === 'duration'
                 ? 'bg-cyan-600 text-white'
                 : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-            }`}
+              }`}
           >
             Duration
           </button>
@@ -487,43 +483,14 @@ export const Events = () => {
                     ${isTarget ? 'ring-2 ring-cyan-400 ring-offset-2 ring-offset-gray-950' : ''}
                   `}
                 >
-                  {/* Arrow buttons - only show in reorder mode when not dragging this card */}
-                  {reorderMode && !isDragged && (
-                    <div
-                      className="absolute top-2 left-2 z-10 flex gap-1"
-                      // CRITICAL: Stop pointer events from reaching parent to prevent drag start
-                      onPointerDown={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => handleMoveUp(index)}
-                        disabled={index === 0}
-                        className="p-1 bg-gray-900 hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed rounded border border-gray-700 text-white"
-                        aria-label="Move up"
-                        title="Move up"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleMoveDown(index)}
-                        disabled={index === visibleEvents.length - 1}
-                        className="p-1 bg-gray-900 hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed rounded border border-gray-700 text-white"
-                        aria-label="Move down"
-                        title="Move down"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </button>
-                    </div>
-                  )}
-
                   <EventCard
                     event={event}
                     onClick={reorderMode ? undefined : () => handleOpenModal(event.id)}
+                    showReorderButtons={reorderMode && !isDragged}
+                    onMoveUp={() => handleMoveUp(index)}
+                    onMoveDown={() => handleMoveDown(index)}
+                    canMoveUp={index > 0}
+                    canMoveDown={index < visibleEvents.length - 1}
                   />
                 </div>
               );
