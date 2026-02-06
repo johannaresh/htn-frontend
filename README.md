@@ -103,8 +103,8 @@ src/
 
 ## Data Source
 
-Events are fetched from the GraphQL endpoint:
-- **URL**: `https://api.hackthenorth.com/v3/frontend-challenge`
+Events are fetched from the given GraphQL endpoint:
+
 - **Query**: `sampleEvents` (for list) and `sampleEvent(id)` (for individual event)
 
 ## Design Principles

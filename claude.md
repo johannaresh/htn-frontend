@@ -22,8 +22,7 @@ Landing (scrolling), About, Team, Events, Sponsors, FAQ.
    - Users can click through and navigate between related events
 
 ## Data source
-Use GraphQL endpoint:
-- POST https://api.hackthenorth.com/v3/frontend-challenge
+GraphQL endpoint given
 
 GraphQL query shape (use this exact field set for list):
 - sampleEvents {
