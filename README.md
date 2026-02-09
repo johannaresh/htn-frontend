@@ -6,6 +6,7 @@ A visually polished events web application for Hackathon Global Inc., built with
 
 - **Public Events Browsing**: Browse public events without authentication  
 - **Private Events Access**: Log in to view both public and private events  
+- **Sample Volunteer Application**: Example client-side implementation for volunteer application   
 - **Event Details**: View detailed information including speakers, times, and descriptions  
 - **Related Events Navigation**: Easily navigate between related events  
 - **Responsive Design**: Optimized for desktop, tablet, and mobile devices  
