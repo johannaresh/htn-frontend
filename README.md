@@ -1,24 +1,23 @@
-# HTN Events - Frontend Challenge
+# HTN Events – Frontend Challenge
 
-A visually polished events web app for Hackathon Global Inc. built with React, TypeScript, and Vite.
+A visually polished events web application for Hackathon Global Inc., built with React and TypeScript, with a focus on clarity, responsiveness, and maintainable structure.
 
 ## Features
 
-- **Public Events Browsing**: Browse public events without authentication
-- **Private Events Access**: Log in to view both public and private events
-- **Event Details**: View detailed information about each event including speakers, times, and descriptions
-- **Related Events Navigation**: Easily navigate between related events
-- **Responsive Design**: Works seamlessly on desktop and mobile devices
-- **Constellation Theme**: Black and white design with subtle constellation background effect
+- **Public Events Browsing**: Browse public events without authentication  
+- **Private Events Access**: Log in to view both public and private events  
+- **Event Details**: View detailed information including speakers, times, and descriptions  
+- **Related Events Navigation**: Easily navigate between related events  
+- **Responsive Design**: Optimized for desktop, tablet, and mobile devices  
+- **Constellation Theme**: Black-and-white design with a subtle constellation background effect  
 
 ## Tech Stack
 
-- **React 19** - UI library
-- **TypeScript** - Type safety
-- **Vite** - Build tool and dev server
-- **React Router** - Client-side routing
-- **GraphQL Request** - GraphQL client
-- **Tailwind CSS** - Styling
+- **React** – UI library  
+- **TypeScript** – Type safety and developer ergonomics  
+- **Next.js (App Router)** – Routing, server-side logic, and environment security  
+- **GraphQL Request** – Lightweight GraphQL client  
+- **Tailwind CSS** – Utility-first styling  
 
 ## Getting Started
 
@@ -43,7 +42,7 @@ Start the development server:
 npm run dev
 ```
 
-The app will be available at `http://localhost:5173` (or another port if 5173 is taken).
+The app will be available at `http://localhost:3000` (or another port if 3000 is taken).
 
 ### Building for Production
 
