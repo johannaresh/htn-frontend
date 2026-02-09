@@ -15,31 +15,31 @@ export const Landing = () => {
       <StarBackground starCount={150} />
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center px-4 pt-20">
+      <section className="relative min-h-screen flex items-center justify-center px-4 pt-16 sm:pt-20">
         <div className="max-w-6xl mx-auto text-center z-10">
           {/* Floating title with gradient */}
-          <div className="mb-8 animate-float">
-            <h1 className="text-6xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-cyan-400 via-white to-cyan-400 bg-clip-text text-transparent animate-gradient-x">
+          <div className="mb-6 sm:mb-8 animate-float">
+            <h1 className="text-4xl sm:text-6xl md:text-8xl font-bold mb-4 sm:mb-6 bg-gradient-to-r from-cyan-400 via-white to-cyan-400 bg-clip-text text-transparent animate-gradient-x">
               Hackathon Global Inc.
             </h1>
-            <div className="w-32 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent mx-auto mb-8"></div>
+            <div className="w-20 sm:w-32 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent mx-auto mb-6 sm:mb-8"></div>
           </div>
 
-          <p className="text-xl md:text-3xl text-gray-300 mb-12 max-w-3xl mx-auto font-light leading-relaxed">
+          <p className="text-lg sm:text-xl md:text-3xl text-gray-300 mb-8 sm:mb-12 max-w-3xl mx-auto font-light leading-relaxed">
             Welcome to the <span className="text-white font-semibold">Best Hackathon</span>
             <br />
             Join us for an incredible journey of innovation
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
-            <Link href="/events">
-              <Button variant="primary" className="text-lg px-12 py-4 shadow-lg shadow-cyan-500/50 hover:shadow-cyan-500/80 transition-all hover:scale-105">
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center mb-12 sm:mb-16">
+            <Link href="/events" className="w-full sm:w-auto">
+              <Button variant="primary" className="w-full sm:w-auto text-base sm:text-lg px-8 sm:px-12 py-3 sm:py-4 shadow-lg shadow-cyan-500/50 hover:shadow-cyan-500/80 transition-all hover:scale-105">
                 Explore Events
               </Button>
             </Link>
             <Button
               variant="secondary"
-              className="text-lg px-12 py-4 hover:scale-105 transition-all"
+              className="w-full sm:w-auto text-base sm:text-lg px-8 sm:px-12 py-3 sm:py-4 hover:scale-105 transition-all"
               onClick={() => setIsVolunteerModalOpen(true)}
             >
               Apply to Volunteer
@@ -56,16 +56,16 @@ export const Landing = () => {
       </section>
 
       {/* Metrics Section */}
-      <section className="relative py-32 px-4 border-t border-gray-800">
+      <section className="relative py-16 sm:py-32 px-4 border-t border-gray-800">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent">
+          <div className="text-center mb-10 sm:mb-16">
+            <h2 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-cyan-400 to-teal-400 bg-clip-text text-transparent">
               Our Legacy
             </h2>
-            <p className="text-gray-400 text-xl">A decade of innovation and community</p>
+            <p className="text-gray-400 text-base sm:text-xl">A decade of innovation and community</p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-8 max-w-5xl mx-auto">
             {[
               { number: '10+', label: 'Years Running', color: 'from-cyan-400 to-cyan-600' },
               { number: '1000+', label: 'Hackers', color: 'from-teal-400 to-teal-600' },
@@ -74,12 +74,12 @@ export const Landing = () => {
             ].map((stat, i) => (
               <div
                 key={i}
-                className="group text-center p-8 rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700 hover:border-cyan-500 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-cyan-500/20"
+                className="group text-center p-4 sm:p-8 rounded-xl sm:rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700 hover:border-cyan-500 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-cyan-500/20"
               >
-                <div className={`text-5xl md:text-6xl font-bold mb-3 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`}>
+                <div className={`text-3xl sm:text-5xl md:text-6xl font-bold mb-1 sm:mb-3 bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`}>
                   {stat.number}
                 </div>
-                <div className="text-gray-400 group-hover:text-gray-300 transition-colors">{stat.label}</div>
+                <div className="text-xs sm:text-base text-gray-400 group-hover:text-gray-300 transition-colors">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -87,16 +87,16 @@ export const Landing = () => {
       </section>
 
       {/* Speakers Section */}
-      <section className="relative py-32 px-4 border-t border-gray-800">
+      <section className="relative py-16 sm:py-32 px-4 border-t border-gray-800">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
+          <div className="text-center mb-10 sm:mb-16">
+            <h2 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
               Featured Speakers 2026
             </h2>
-            <p className="text-gray-400 text-xl">Learn from industry leaders and innovators</p>
+            <p className="text-gray-400 text-base sm:text-xl">Learn from industry leaders and innovators</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-8">
             {[
               { initials: 'TL', title: 'Tech Leaders', subtitle: 'Industry Experts', gradient: 'from-cyan-500 to-teal-500' },
               { initials: 'IN', title: 'Innovators', subtitle: 'Startup Founders', gradient: 'from-amber-500 to-orange-500' },
@@ -104,13 +104,13 @@ export const Landing = () => {
             ].map((speaker, i) => (
               <div
                 key={i}
-                className="group relative p-8 rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700 hover:border-amber-500 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-amber-500/20"
+                className="group relative p-6 sm:p-8 rounded-xl sm:rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700 hover:border-amber-500 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-amber-500/20"
               >
-                <div className={`w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br ${speaker.gradient} flex items-center justify-center text-white text-3xl font-bold shadow-lg`}>
+                <div className={`w-16 h-16 sm:w-24 sm:h-24 mx-auto mb-4 sm:mb-6 rounded-full bg-gradient-to-br ${speaker.gradient} flex items-center justify-center text-white text-2xl sm:text-3xl font-bold shadow-lg`}>
                   {speaker.initials}
                 </div>
-                <h3 className="text-2xl font-bold text-white text-center mb-2">{speaker.title}</h3>
-                <p className="text-gray-400 text-center">{speaker.subtitle}</p>
+                <h3 className="text-xl sm:text-2xl font-bold text-white text-center mb-2">{speaker.title}</h3>
+                <p className="text-gray-400 text-center text-sm sm:text-base">{speaker.subtitle}</p>
               </div>
             ))}
           </div>
@@ -127,22 +127,22 @@ export const Landing = () => {
       </section>
 
       {/* Sponsors Section */}
-      <section className="relative py-32 px-4 border-t border-gray-800">
+      <section className="relative py-16 sm:py-32 px-4 border-t border-gray-800">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl md:text-6xl font-bold mb-4 text-white">
+          <div className="text-center mb-10 sm:mb-16">
+            <h2 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-3 sm:mb-4 text-white">
               Powered By Our Sponsors
             </h2>
-            <p className="text-gray-400 text-xl">Thank you to our amazing partners</p>
+            <p className="text-gray-400 text-base sm:text-xl">Thank you to our amazing partners</p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-8 sm:mb-12">
             {['Tech Corp', 'Innovation Labs', 'Dev Tools Inc', 'Cloud Systems', 'AI Startup', 'Data Analytics', 'Web3 Co', 'Future Tech'].map((sponsor, i) => (
               <div
                 key={i}
-                className="group aspect-square rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700 hover:border-gray-500 transition-all duration-300 hover:scale-105 flex items-center justify-center p-6"
+                className="group aspect-square rounded-xl sm:rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-700 hover:border-gray-500 transition-all duration-300 hover:scale-105 flex items-center justify-center p-4 sm:p-6"
               >
-                <div className="text-gray-400 group-hover:text-white text-center text-sm font-medium transition-colors">
+                <div className="text-gray-400 group-hover:text-white text-center text-xs sm:text-sm font-medium transition-colors">
                   {sponsor}
                 </div>
               </div>
@@ -150,8 +150,8 @@ export const Landing = () => {
           </div>
 
           <div className="text-center">
-            <Link href="/sponsors">
-              <Button variant="secondary" className="text-lg px-12 py-4 hover:scale-105 transition-all">
+            <Link href="/sponsors" className="w-full sm:w-auto inline-block">
+              <Button variant="secondary" className="w-full sm:w-auto text-base sm:text-lg px-8 sm:px-12 py-3 sm:py-4 hover:scale-105 transition-all">
                 View All Sponsors
               </Button>
             </Link>
@@ -160,23 +160,23 @@ export const Landing = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="relative py-32 px-4 border-t border-gray-800">
+      <section className="relative py-16 sm:py-32 px-4 border-t border-gray-800">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-5xl md:text-6xl font-bold mb-8 bg-gradient-to-r from-cyan-400 via-white to-cyan-400 bg-clip-text text-transparent">
+          <h2 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-6 sm:mb-8 bg-gradient-to-r from-cyan-400 via-white to-cyan-400 bg-clip-text text-transparent">
             Ready to Join?
           </h2>
-          <p className="text-gray-300 text-xl mb-12 leading-relaxed">
+          <p className="text-gray-300 text-base sm:text-xl mb-8 sm:mb-12 leading-relaxed">
             Be part of the next generation of innovators. Register for our upcoming events
             and connect with 1000+ hackers from around the world.
           </p>
-          <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <Link href="/events">
-              <Button variant="primary" className="text-lg px-12 py-4 shadow-lg shadow-cyan-500/50 hover:shadow-cyan-500/80 transition-all hover:scale-105">
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center">
+            <Link href="/events" className="w-full sm:w-auto">
+              <Button variant="primary" className="w-full sm:w-auto text-base sm:text-lg px-8 sm:px-12 py-3 sm:py-4 shadow-lg shadow-cyan-500/50 hover:shadow-cyan-500/80 transition-all hover:scale-105">
                 Browse Events
               </Button>
             </Link>
-            <Link href="/about">
-              <Button variant="secondary" className="text-lg px-12 py-4 hover:scale-105 transition-all">
+            <Link href="/about" className="w-full sm:w-auto">
+              <Button variant="secondary" className="w-full sm:w-auto text-base sm:text-lg px-8 sm:px-12 py-3 sm:py-4 hover:scale-105 transition-all">
                 Learn More
               </Button>
             </Link>
