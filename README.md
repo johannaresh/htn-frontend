@@ -89,16 +89,38 @@ When logged out:
 ## Project Structure
 
 ```
-src/
-├── api/              # GraphQL client and queries
-├── auth/             # Authentication context and hooks
-├── components/
-│   ├── events/      # Event-related components
-│   ├── layout/      # Layout components (Navbar, Footer, AppShell)
-│   └── ui/          # Reusable UI components (Button, Badge, Input)
-├── pages/           # Page components
-├── styles/          # Global styles
-└── utils/           # Utility functions
+app/
+├── api/events/            # Server-side API routes (key-hidden)
+│   ├── route.ts           # Fetch all events
+│   └── [id]/route.ts      # Fetch single event
+├── events/                # Events list + detail pages
+│   ├── page.tsx
+│   └── [id]/page.tsx
+├── layout.tsx             # Root layout with AuthProvider
+├── page.tsx               # Landing page
+├── about/ | faq/ | team/  # Static content pages
+├── login/ | sponsors/
+└── globals.css            # Global Tailwind styles
+
+components/
+├── events/                # Event cards, modals, related events
+├── layout/                # App shell, navbar, footer
+├── forms/                 # Sponsor + volunteer modals
+└── ui/                    # Reusable UI primitives
+
+lib/
+├── api/                   # Client-side API helpers
+├── auth/                  # Auth context with SSR hydration
+├── types/                 # Shared TypeScript types
+└── utils/                 # Small reusable utilities
+
+public/                    # Static assets (icons, images)
+
+config/
+├── .env.local             # Server-only secrets
+├── next.config.js
+├── tailwind.config.js
+└── tsconfig.json
 ```
 
 ## Data Source
