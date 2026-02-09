@@ -1,7 +1,19 @@
+/**
+ * Server-side API route that proxies GraphQL requests to the external API.
+ *
+ * Architecture decision: We use Next.js API routes as a proxy layer to hide the
+ * GraphQL endpoint URL from the client bundle. In the previous Vite setup, the
+ * endpoint was exposed in the frontend JavaScript, visible in Network tab and
+ * browser DevTools. Now the external API URL only exists in .env.local (server-only).
+ *
+ * Frontend calls /api/events → This route calls external GraphQL → Returns JSON
+ */
 import { NextResponse } from 'next/server';
 import { GraphQLClient, gql } from 'graphql-request';
 import type { Event } from '@/lib/types/event';
 
+// process.env.GRAPHQL_ENDPOINT is server-only because it lacks the NEXT_PUBLIC_ prefix.
+// This ensures the URL never appears in the client-side JavaScript bundle.
 const GRAPHQL_ENDPOINT = process.env.GRAPHQL_ENDPOINT;
 
 if (!GRAPHQL_ENDPOINT) {

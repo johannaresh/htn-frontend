@@ -28,7 +28,14 @@ interface DragState {
   offsetY: number;
 }
 
-// Apply custom order to events
+/**
+ * Applies user's custom ordering to the event list.
+ *
+ * Edge case handling: If the stored order contains IDs that no longer exist
+ * (e.g., events were deleted from the API), we silently skip them. If new events
+ * appear that aren't in the custom order, we append them at the end. This ensures
+ * the ordering remains stable even as the event list changes over time.
+ */
 function applyCustomOrder(events: Event[], storedOrder: number[]): Event[] {
   if (storedOrder.length === 0) return events;
 
@@ -36,6 +43,7 @@ function applyCustomOrder(events: Event[], storedOrder: number[]): Event[] {
   const ordered: Event[] = [];
   const seen = new Set<number>();
 
+  // First, add events in the stored order
   for (const id of storedOrder) {
     const event = eventMap.get(id);
     if (event) {
@@ -44,6 +52,7 @@ function applyCustomOrder(events: Event[], storedOrder: number[]): Event[] {
     }
   }
 
+  // Then append any new events that weren't in the stored order
   for (const event of events) {
     if (!seen.has(event.id)) {
       ordered.push(event);
@@ -105,7 +114,9 @@ export const Events = () => {
   // Refs for card elements
   const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
-  // Helper to update search params
+  // Next.js App Router requires manual URL construction for search param updates.
+  // Unlike react-router's setSearchParams, we must build the full URL and push it.
+  // Pass null values to remove a param from the URL (e.g., clearing a filter).
   const updateSearchParams = useCallback((updates: Record<string, string | null>) => {
     const params = new URLSearchParams(searchParams.toString());
     Object.entries(updates).forEach(([key, value]) => {
@@ -159,7 +170,8 @@ export const Events = () => {
     return applyCustomOrder(sorted, customOrder);
   }, [events, customOrder, sortMode]);
 
-  // Auth-gated events
+  // Auth-gated events: unauthenticated users only see public events.
+  // Treats missing permission field as public (API contract allows undefined permission).
   const gatedEvents = useMemo(() => {
     if (isAuthed) return orderedEvents;
     return orderedEvents.filter((e) => !e.permission || e.permission === 'public');
@@ -193,7 +205,9 @@ export const Events = () => {
     localStorage.setItem(EVENT_ORDER_KEY, JSON.stringify(newOrder));
   }, []);
 
-  // Simple swap: swap two events at indices i and j in the visible list
+  // Swap-based reordering is simpler and more predictable than insert/remove operations.
+  // We swap event IDs in the customOrder array rather than moving elements, which avoids
+  // complex edge cases around insertion points and maintains a stable ordering.
   const swapEvents = useCallback((indexA: number, indexB: number) => {
     if (indexA === indexB) return;
     if (indexA < 0 || indexB < 0) return;
@@ -202,17 +216,15 @@ export const Events = () => {
     const eventA = visibleEvents[indexA];
     const eventB = visibleEvents[indexB];
 
-    // Get current order (use gated events as base if no custom order)
+    // Get current order, falling back to gatedEvents if user hasn't customized yet
     const gatedIds = gatedEvents.map((e) => e.id);
     const currentOrder = customOrder.length > 0 ? [...customOrder] : [...gatedIds];
 
-    // Find positions in currentOrder
     const posA = currentOrder.indexOf(eventA.id);
     const posB = currentOrder.indexOf(eventB.id);
 
     if (posA === -1 || posB === -1) return;
 
-    // Swap them
     currentOrder[posA] = eventB.id;
     currentOrder[posB] = eventA.id;
 
@@ -255,7 +267,9 @@ export const Events = () => {
     });
   }, [reorderMode]);
 
-  // Find which card index the pointer is over
+  // Find which card the pointer is hovering over during drag.
+  // Uses Euclidean distance to card centers for accurate targeting in a 3-column grid.
+  // Previous approach using only Y-coordinates caused flickering when dragging horizontally.
   const findTargetIndex = useCallback((clientX: number, clientY: number, draggedIndex: number): number => {
     let closest = draggedIndex;
     let closestDist = Infinity;
@@ -268,7 +282,6 @@ export const Events = () => {
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
 
-      // Calculate distance from pointer to card center
       const dist = Math.sqrt(Math.pow(clientX - centerX, 2) + Math.pow(clientY - centerY, 2));
 
       if (dist < closestDist) {

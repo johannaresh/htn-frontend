@@ -49,10 +49,14 @@ export const EventCard = ({
             <Badge variant={event.event_type}>{formatEventType(event.event_type)}</Badge>
             {isPrivate && isAuthed && <Badge variant="private">Private</Badge>}
           </div>
-          {/* Reorder buttons - positioned under the badge */}
+          {/* Reorder buttons */}
           {showReorderButtons && (
             <div
               className="flex gap-1"
+              // CRITICAL: stopPropagation on the container prevents the parent card's
+              // onPointerDown from firing, which would otherwise initiate drag mode
+              // before the button's onClick can execute. Without this, clicking arrows
+              // would start dragging the card instead of moving it.
               onPointerDown={(e) => e.stopPropagation()}
             >
               <button

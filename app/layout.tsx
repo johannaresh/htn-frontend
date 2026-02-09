@@ -1,3 +1,11 @@
+/**
+ * Root layout for the Next.js App Router application.
+ *
+ * Architecture: AuthProvider wraps the entire app to provide authentication state
+ * throughout the component tree. AppShell provides the navbar/footer chrome that
+ * persists across all routes. Both are 'use client' components since they use React
+ * hooks (useState, useEffect) and browser APIs (localStorage).
+ */
 import type { Metadata } from 'next';
 import { AuthProvider } from '@/lib/auth/AuthContext';
 import { AppShell } from '@/components/layout/AppShell';

@@ -1,3 +1,11 @@
+/**
+ * Dynamic API route for fetching a single event by ID.
+ * Route: /api/events/[id]
+ *
+ * The [id] folder name creates a dynamic route segment. Next.js passes the captured
+ * ID value via the params object. This allows the event detail page to fetch data
+ * without exposing the external GraphQL endpoint.
+ */
 import { NextResponse } from 'next/server';
 import { GraphQLClient, gql } from 'graphql-request';
 import type { Event } from '@/lib/types/event';
